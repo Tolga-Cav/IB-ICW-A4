@@ -1,6 +1,7 @@
 l=length(data_out);
 samples_per_window = 64;
 %Create the windows
+%RECTANGULAR WINDOW
 ham = hamming(samples_per_window);
 han = hann(samples_per_window);
 % ...
@@ -24,17 +25,21 @@ windows = [ham, han]; % ...
 data_ch1=data_ch1(l+1:l*2);
 data_ch2=data_ch2(l+1:l*2);
 
+%Possibly reduce the number of samples and values in time array to reduce
+%the sampling rate expost facto
+
 %Center the data at 0
 data_ch1=data_ch1-mean(data_ch1);
 data_ch2=data_ch2-mean(data_ch2);
 
 %For each type of window
-    %For each overlap number
+    %For each overlap value
         %loop across the samples
             %Create the subset of samples of data
             %.* that subset with relative window function
             %fourier that set of samples
-            %add that as a plot
+            %add that as a subplot
+        %display the plot of all these fourier transforms
 
 
 
