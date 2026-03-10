@@ -1,5 +1,5 @@
 l=length(data_out);
-samples_per_window = 500;
+samples_per_window = 64;
 
 %Create the windows
 rect = rectwin(samples_per_window);
@@ -17,20 +17,26 @@ overlaps = [0.0 , 0.25, 0.50, 0.75];
 
 %List of data files
 files = ["lab_data/sin_9_13.mat"]; %["lab_data/sin_10.mat", "lab_data/sin_9_13.mat", "lab_data/sin_3_9_13.mat", "lab_data/sin_random.mat"];
-%EARTHQUAKE FILE NAMES HERE
+%Earthquake filenames
+%files = ["earthquake_data/dataset1-small.mat",
+%"earthquake_data/dataset2-moderate.mat", "earthquake_data/dataset3-large.mat"];
 
-%ADD A LIST HERE OF PLOT TITLES
+plot_names = ["One Sin Input","Two Sins Input","Three Sins Input", "Random Input"];
+%plot_names = ["Small Earthquake", "Moderate Earthquake", "Large Earthquake"];
 
 %Loop this for each input we gave it
 for file_index = 1:length(files)
     load(files(file_index));
-    %Cut the data to only have steady state
-    data_ch1=data_ch1(l+1:l*2);
-    data_ch2=data_ch2(l+1:l*2);
-    t=t(l+1:l*2);
+
+    %Cut the data to only have steady state 
+    %If we show the evolution of the spectrum, we don't need to do this
+    % data_ch1=data_ch1(l+1:l*2);
+    % data_ch2=data_ch2(l+1:l*2);
+    % t=t(l+1:l*2);
     
     %Possibly reduce the number of samples and values in time array to reduce
     %the sampling rate expost facto
+    %We probably don't need to do this
     
     %Center the data at 0
     data_ch1=data_ch1-mean(data_ch1);
@@ -44,20 +50,29 @@ for file_index = 1:length(files)
         for overlap_index = 1:length(overlaps)
             overlap = overlaps(overlap_index);
 
+            transforms_1 = [];
+            transforms_2 = [];
+
             figure
             hold on 
             %loop across the samples %FIX THIS HERE 
             for k = 0:(floor( (length(data_ch1)/samples_per_window)*( 1 / (1-overlap) ) ) - 1)
                 
+                samples_subset = (samples_per_window*k - overlap*samples_per_window*(k ~= 0)) + (1:samples_per_window);
                 %Create the subset of samples of data
-                selected_ch1 = data_ch1( (samples_per_window*k - overlap*samples_per_window*(k ~= 0)) + (1:samples_per_window));
-                selected_ch2 = data_ch2((samples_per_window*k - overlap*samples_per_window*(k ~= 0)) + (1:samples_per_window));
-
+                selected_ch1 = data_ch1(samples_subset);
+                selected_ch2 = data_ch2(samples_subset);
+                
+                %Create frequency domain values
+                selected_t = t(samples_subset);
+                selected_t = selected_t - min(selected_t);
+                x = selected_t*real_rate/(selected_t(length(selected_t)));
+               
                 %apply window
                 windowed_ch1 = selected_ch1.*window;
                 windowed_ch2 = selected_ch2.*window;
 
-                %take fourier transforms
+                %take fourier transforms CHANGE THIS HERE
                 if k==0
                     f_ch1 = fourier(windowed_ch1);
                     f_ch2 = fourier(windowed_ch2);
@@ -65,23 +80,22 @@ for file_index = 1:length(files)
                     f_ch1 = f_ch1 + fourier(windowed_ch1);
                     f_ch2 = f_ch2 + fourier(windowed_ch2);
                 end
-            %display the plot of all these fourier transforms
+                %Instead append each transform as another element in the
+                %array.
             end    
-            %Create frequency domain values %FIX THIS BIT HERE
-            selected_t = t((1:samples_per_window));
-            x = selected_t*real_rate/(selected_t(length(selected_t)));
-            x = (x-min(x))*15+15;
+            %INSTEAD CREATE A WATERFALL? PLOT HERE
 
-            %Average all fourier transforms %IS THIS A VALID THING TO DO?
+            %Average all fourier transforms
             f_ch1 = f_ch1/k;
             f_ch2 = f_ch2/k;
             
             %Create plots for ch 1 and 2
             plot(x,abs(f_ch1),x,abs(f_ch2));
-            title( window_name + " " + k + " " + overlap)
+            title( window_name + " " + k + " " + overlap) %CHANGE NAME OF THE PLOT TO BE BETTER
+            %ADD NICE AXIS TITLES
             V = axis;
             axis([0 50 V(3) V(4)])
-            %add that as a subplot
+
             hold off
         end
     end
