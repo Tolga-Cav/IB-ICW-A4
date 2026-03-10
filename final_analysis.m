@@ -49,7 +49,8 @@ for file_index = 1:length(files)
         %For each overlap value
         for overlap_index = 1:length(overlaps)
             overlap = overlaps(overlap_index);
-
+            
+            %For speed if needed, make these empty arrays the size of max k
             transforms_1 = [];
             transforms_2 = [];
 
@@ -72,22 +73,16 @@ for file_index = 1:length(files)
                 windowed_ch1 = selected_ch1.*window;
                 windowed_ch2 = selected_ch2.*window;
 
-                %take fourier transforms CHANGE THIS HERE
-                if k==0
-                    f_ch1 = fourier(windowed_ch1);
-                    f_ch2 = fourier(windowed_ch2);
-                else
-                    f_ch1 = f_ch1 + fourier(windowed_ch1);
-                    f_ch2 = f_ch2 + fourier(windowed_ch2);
-                end
-                %Instead append each transform as another element in the
-                %array.
+                %take fourier transforms 
+                f_ch1 = fourier(windowed_ch1);
+                f_ch2 = fourier(windowed_ch2);
+                
+                %Add the transforms to the array
+                transforms_1 = [transforms_1;f_ch1];
+                transforms_2 = [transforms_2;f_ch2];
+                
             end    
             %INSTEAD CREATE A WATERFALL? PLOT HERE
-
-            %Average all fourier transforms
-            f_ch1 = f_ch1/k;
-            f_ch2 = f_ch2/k;
             
             %Create plots for ch 1 and 2
             plot(x,abs(f_ch1),x,abs(f_ch2));
