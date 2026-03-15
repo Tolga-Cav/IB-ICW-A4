@@ -162,7 +162,7 @@ for file_index = 1:length(files)
             % % CHANGE THIS
 
             hold off
-            if overlap == 0.9 | window_name == "Hanning"
+            if window_name == "Hamming"
                 saveas(gcf, plot_names(file_index)+"_"+window_name+"_"+(overlap*100)+".png");
             end
         end
